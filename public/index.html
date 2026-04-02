@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>ميكروباصي</title>
+  <meta name="description" content="نقل ذكي بسيارات فان 7 راكب في مصر">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- ========== SPLASH ========== -->
+  <div id="splash" class="screen active">
+    <div class="splash-content">
+      <div class="splash-icon">🚐</div>
+      <h1 class="splash-title">ميكروباصي</h1>
+      <p class="splash-sub">رحلاتك في متناول يدك</p>
+      <div class="loader"></div>
+    </div>
+  </div>
+
+  <!-- ========== ONBOARDING ========== -->
+  <div id="onboarding" class="screen">
+    <div class="onboard-pages" id="onboardPages">
+      <div class="onboard-page active" data-page="0">
+        <div class="onboard-icon">🚐</div>
+        <h2>مرحباً بك في ميكروباصي</h2>
+        <p>أول تطبيق لحجز الميكروباص في مصر. رحلات مريحة وآمنة بأسعار مناسبة.</p>
+      </div>
+      <div class="onboard-page" data-page="1">
+        <div class="onboard-icon">📍</div>
+        <h2>تتبع مباشر</h2>
+        <p>تابع رحلتك لحظة بلحظة واعرف متى يصل السائق إليك.</p>
+      </div>
+      <div class="onboard-page" data-page="2">
+        <div class="onboard-icon">💰</div>
+        <h2>أسعار ثابتة وعادلة</h2>
+        <p>لا مفاجآت! اعرف سعر الرحلة قبل الحجز وادفع بأمان.</p>
+      </div>
+    </div>
+    <div class="onboard-dots" id="onboardDots">
+      <span class="dot active"></span><span class="dot"></span><span class="dot"></span>
+    </div>
+    <div class="onboard-actions">
+      <button class="btn-skip" onclick="goTo('login')">تخطي</button>
+      <button class="btn-primary" id="onboardNext" onclick="nextOnboard()">التالي</button>
+    </div>
+  </div>
+
+  <!-- ========== LOGIN ========== -->
+  <div id="login" class="screen">
+    <div class="login-wrap">
+      <div class="login-icon">🚐</div>
+      <h1>تسجيل الدخول</h1>
+      <p class="login-desc">أدخل رقم هاتفك لإرسال رمز التحقق</p>
+      <div class="phone-input-wrap">
+        <span class="phone-prefix">+20</span>
+        <input type="tel" id="phoneInput" placeholder="1xxxxxxxxx" maxlength="10" inputmode="numeric">
+      </div>
+      <p class="phone-hint" id="phoneHint"></p>
+      <button class="btn-primary full" id="sendOtpBtn" onclick="sendOtp()">إرسال الرمز</button>
+      <p class="terms">بتسجيل الدخول، أنت توافق على شروط الاستخدام وسياسة الخصوصية</p>
+    </div>
+  </div>
+
+  <!-- ========== OTP ========== -->
+  <div id="otp" class="screen">
+    <div class="otp-wrap">
+      <button class="back-btn" onclick="goTo('login')">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+      </button>
+      <h1>رمز التحقق</h1>
+      <p class="otp-desc" id="otpDesc">أرسلنا رمز إلى</p>
+      <div class="otp-code" id="otpDisplay" style="display:none">
+        <span>🔑 الرمز التجريبي: </span><strong id="otpCodeDisplay"></strong>
+      </div>
+      <div class="otp-inputs" id="otpInputs">
+        <input type="text" maxlength="1" inputmode="numeric" data-i="0">
+        <input type="text" maxlength="1" inputmode="numeric" data-i="1">
+        <input type="text" maxlength="1" inputmode="numeric" data-i="2">
+        <input type="text" maxlength="1" inputmode="numeric" data-i="3">
+      </div>
+      <button class="btn-primary full" id="verifyOtpBtn" onclick="verifyOtp()">تأكيد</button>
+      <p class="resend-text" id="resendText">
+        لم يصلك الرمز؟ <button class="link" id="resendBtn" onclick="sendOtp()" disabled>إعادة الإرسال</button>
+      </p>
+      <p class="timer" id="otpTimer"></p>
+    </div>
+  </div>
+
+  <!-- ========== HOME ========== -->
+  <div id="home" class="screen">
+    <div class="map-container" id="homeMap"></div>
+    <div class="top-bar">
+      <div class="brand">
+        <div class="brand-icon">🚐</div>
+        <span class="brand-name">ميكروباصي</span>
+      </div>
+      <div class="top-actions">
+        <button class="icon-btn" id="langToggle" onclick="toggleLang()" title="English">🌐</button>
+        <button class="icon-btn" id="themeToggle" onclick="toggleTheme()">🌙</button>
+      </div>
+    </div>
+    <div class="search-card" onclick="goTo('booking')">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1A6B3C" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+      <span data-i18n="search_placeholder">إلى أين تريد الذهاب؟</span>
+    </div>
+    <div class="home-bottom">
+      <div class="home-handle"></div>
+      <h3 data-i18n="where_to_go">إلى أين تريد الذهاب؟</h3>
+      <button class="btn-primary full" onclick="goTo('booking')">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13" rx="2"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+        <span data-i18n="request_van">طلب فان</span>
+      </button>
+    </div>
+    <div class="fab" onclick="goTo('profile')">👤</div>
+    <nav class="bottom-nav">
+      <a class="nav-item active" onclick="goTo('home')" data-i18n="nav_home">الرئيسية</a>
+      <a class="nav-item" onclick="goTo('profile')" data-i18n="nav_profile">حسابي</a>
+      <a class="nav-item" onclick="goTo('settings')" data-i18n="nav_settings">الإعدادات</a>
+    </nav>
+  </div>
+
+  <!-- ========== BOOKING ========== -->
+  <div id="booking" class="screen">
+    <div class="screen-header">
+      <button class="back-btn" onclick="goTo('home')">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+      </button>
+      <h1 data-i18n="book_trip">حجز رحلة</h1>
+    </div>
+    <div class="booking-body">
+      <div class="location-fields">
+        <div class="loc-field">
+          <div class="loc-dot green"></div>
+          <div class="loc-info">
+            <label data-i18n="pickup_label">نقطة الانطلاق</label>
+            <input type="text" id="pickupInput" value="ميدان التحرير، القاهرة" data-i18n-placeholder="enter_pickup">
+          </div>
+        </div>
+        <div class="loc-line"></div>
+        <div class="loc-field">
+          <div class="loc-dot red"></div>
+          <div class="loc-info">
+            <label data-i18n="dest_label">الوجهة</label>
+            <input type="text" id="destInput" placeholder="أدخل وجهتك" data-i18n-placeholder="enter_dest">
+          </div>
+        </div>
+      </div>
+
+      <h3 data-i18n="van_type">نوع الفان</h3>
+      <div class="car-types">
+        <div class="car-card selected" data-type="suzuki" onclick="selectCar('suzuki')">
+          <div class="car-icon">🚐</div>
+          <strong>سوزوكي</strong>
+          <span>اقتصادي - حتى 7 ركاب</span>
+          <div class="car-price">من 20 ج.م</div>
+        </div>
+        <div class="car-card" data-type="chevrolet" onclick="selectCar('chevrolet')">
+          <div class="car-icon">🚌</div>
+          <strong>شيفروليه</strong>
+          <span>مريح - حتى 7 ركاب</span>
+          <div class="car-price">من 30 ج.م</div>
+        </div>
+      </div>
+
+      <h3 data-i18n="passengers">عدد الركاب</h3>
+      <div class="passenger-counter">
+        <button class="counter-btn" onclick="changePass(-1)">−</button>
+        <div class="counter-display">
+          <span id="passCount">1</span>
+          <small>راكب</small>
+        </div>
+        <button class="counter-btn" onclick="changePass(1)">+</button>
+      </div>
+
+      <div class="fare-card" id="fareCard">
+        <div class="fare-top">
+          <span class="fare-car-name">سوزوكي</span>
+          <span class="fare-amount" id="fareAmount">85 ج.م</span>
+        </div>
+        <div class="fare-details">
+          <div><span>📏</span> <span id="fareDist">8.5 كم</span></div>
+          <div><span>⏱</span> <span id="fareTime">22 دقيقة</span></div>
+          <div><span>💵</span> <span id="fareComm">عمولة 15 ج.م</span></div>
+        </div>
+      </div>
+
+      <button class="btn-primary full" id="confirmBtn" onclick="confirmTrip()" data-i18n="confirm_request">تأكيد الطلب</button>
+    </div>
+  </div>
+
+  <!-- ========== TRACKING ========== -->
+  <div id="tracking" class="screen">
+    <div class="map-container" id="trackMap"></div>
+    <div class="track-top-bar">
+      <button class="icon-btn back-white" onclick="goTo('home')">←</button>
+      <button class="icon-btn emergency" onclick="showEmergency()">🆘</button>
+    </div>
+    <div class="track-eta" id="trackEta" style="display:none">
+      <span id="etaText">وقت الوصول: 5 دقائق</span>
+    </div>
+    <div class="track-bottom">
+      <div class="status-badge" id="statusBadge">
+        <div class="status-spinner"></div>
+        <span id="statusText">جارٍ البحث عن سائق...</span>
+      </div>
+      <div class="driver-card" id="driverCard" style="display:none">
+        <div class="driver-avatar" id="driverAvatar">أ</div>
+        <div class="driver-info">
+          <strong id="driverName">أحمد محمد</strong>
+          <span id="driverDetails">سوزوكي - أ ب ج ١٢٣٤</span>
+        </div>
+        <div class="driver-rating">⭐ <span id="driverRating">4.8</span></div>
+        <button class="call-btn">📞</button>
+      </div>
+      <button class="btn-primary full" id="finishBtn" style="display:none" onclick="finishTrip()" data-i18n="end_trip">إنهاء الرحلة</button>
+      <button class="btn-outline full danger" id="cancelBtn" onclick="cancelTrip()" data-i18n="cancel_trip">إلغاء الرحلة</button>
+    </div>
+  </div>
+
+  <!-- ========== TRIP SUMMARY ========== -->
+  <div id="tripSummary" class="screen">
+    <div class="summary-wrap">
+      <div class="summary-check">✅</div>
+      <h1 data-i18n="trip_done">تم إنهاء الرحلة بنجاح!</h1>
+      <div class="summary-card">
+        <div class="summary-row"><span>🚐</span><span data-i18n="van_type_label">نوع الفان</span><strong id="sumCarType">سوزوكي</strong></div>
+        <div class="summary-row"><span>📍</span><span data-i18n="from_label">من</span><strong id="sumFrom">ميدان التحرير</strong></div>
+        <div class="summary-row"><span>🏁</span><span data-i18n="to_label">إلى</span><strong id="sumTo">مدينة نصر</strong></div>
+        <div class="summary-row"><span>📏</span><span data-i18n="distance_label">المسافة</span><strong id="sumDist">8.5 كم</strong></div>
+        <div class="summary-row"><span>👥</span><span data-i18n="pass_label">الركاب</span><strong id="sumPass">3</strong></div>
+      </div>
+      <div class="summary-fare">
+        <span data-i18n="total_fare">إجمالي الأجرة</span>
+        <strong id="sumFare">85 ج.م</strong>
+      </div>
+      <h3 data-i18n="rate_trip">قيّم رحلتك</h3>
+      <div class="star-rating" id="starRating">
+        <span class="star active" data-v="1">★</span>
+        <span class="star active" data-v="2">★</span>
+        <span class="star active" data-v="3">★</span>
+        <span class="star active" data-v="4">★</span>
+        <span class="star active" data-v="5">★</span>
+      </div>
+      <button class="btn-primary full" onclick="goTo('home')" data-i18n="new_trip">رحلة جديدة</button>
+    </div>
+  </div>
+
+  <!-- ========== PROFILE ========== -->
+  <div id="profile" class="screen">
+    <div class="screen-header">
+      <h1 data-i18n="my_account">حسابي</h1>
+      <button class="icon-btn" onclick="goTo('settings')">⚙️</button>
+    </div>
+    <div class="profile-body">
+      <div class="profile-card">
+        <div class="profile-avatar" id="profileAvatar">م</div>
+        <div class="profile-info">
+          <strong id="profileName">مستخدم</strong>
+          <span id="profilePhone">+20xxxxxxxxxx</span>
+        </div>
+        <button class="icon-btn" onclick="editName()">✏️</button>
+      </div>
+      <div class="stats-row">
+        <div class="stat-card"><div class="stat-icon">🚐</div><span id="statTrips">0</span><small>رحلة</small></div>
+        <div class="stat-card"><div class="stat-icon">⭐</div><span>4.8</span><small>تقييم</small></div>
+        <div class="stat-card"><div class="stat-icon">💰</div><span id="statTotal">0 ج.م</span><small>إجمالي</small></div>
+      </div>
+      <h3 data-i18n="trip_history">سجل الرحلات</h3>
+      <div id="tripHistory" class="trip-list">
+        <p class="empty-msg" data-i18n="no_trips">لا توجد رحلات سابقة</p>
+      </div>
+    </div>
+    <nav class="bottom-nav">
+      <a class="nav-item" onclick="goTo('home')" data-i18n="nav_home">الرئيسية</a>
+      <a class="nav-item active" onclick="goTo('profile')" data-i18n="nav_profile">حسابي</a>
+      <a class="nav-item" onclick="goTo('settings')" data-i18n="nav_settings">الإعدادات</a>
+    </nav>
+  </div>
+
+  <!-- ========== SETTINGS ========== -->
+  <div id="settings" class="screen">
+    <div class="screen-header">
+      <button class="back-btn" onclick="goTo('home')">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+      </button>
+      <h1 data-i18n="settings_title">الإعدادات</h1>
+    </div>
+    <div class="settings-body">
+      <div class="settings-section">
+        <h3 data-i18n="appearance">المظهر</h3>
+        <div class="settings-card">
+          <div class="setting-item" onclick="toggleTheme()">
+            <span class="setting-icon" id="themeIcon">🌙</span>
+            <div><strong data-i18n="dark_mode">الوضع الليلي</strong><small id="themeStatus">معطّل</small></div>
+            <div class="toggle" id="themeSwitch"><div class="toggle-knob"></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="settings-section">
+        <h3 data-i18n="language">اللغة</h3>
+        <div class="settings-card">
+          <div class="setting-item" onclick="toggleLang()">
+            <span class="setting-icon">🌐</span>
+            <div><strong data-i18n="lang_label">اللغة</strong><small id="langStatus">العربية</small></div>
+            <span class="setting-arrow">›</span>
+          </div>
+        </div>
+      </div>
+      <div class="settings-section">
+        <h3 data-i18n="app_section">التطبيق</h3>
+        <div class="settings-card">
+          <div class="setting-item"><span class="setting-icon">🔔</span><div><strong data-i18n="notifications">الإشعارات</strong><small data-i18n="enabled">مفعّلة</small></div><div class="toggle on"><div class="toggle-knob"></div></div></div>
+          <div class="setting-item"><span class="setting-icon">📍</span><div><strong data-i18n="location_svc">خدمات الموقع</strong><small data-i18n="enabled">مفعّلة</small></div><div class="toggle on"><div class="toggle-knob"></div></div></div>
+        </div>
+      </div>
+      <div class="settings-section">
+        <h3 data-i18n="support">الدعم</h3>
+        <div class="settings-card">
+          <div class="setting-item"><span class="setting-icon">❓</span><div><strong data-i18n="help">المساعدة والأسئلة الشائعة</strong></div><span class="setting-arrow">›</span></div>
+          <div class="setting-item"><span class="setting-icon">🎧</span><div><strong data-i18n="contact">تواصل معنا</strong></div><span class="setting-arrow">›</span></div>
+        </div>
+      </div>
+      <div class="settings-section">
+        <h3 data-i18n="about">حول</h3>
+        <div class="settings-card">
+          <div class="setting-item"><span class="setting-icon">ℹ️</span><div><strong data-i18n="about_app">عن التطبيق</strong><small>الإصدار 1.0.0</small></div><span class="setting-arrow">›</span></div>
+        </div>
+      </div>
+      <button class="btn-outline full danger" onclick="logout()" data-i18n="logout">تسجيل الخروج</button>
+    </div>
+    <nav class="bottom-nav">
+      <a class="nav-item" onclick="goTo('home')" data-i18n="nav_home">الرئيسية</a>
+      <a class="nav-item" onclick="goTo('profile')" data-i18n="nav_profile">حسابي</a>
+      <a class="nav-item active" onclick="goTo('settings')" data-i18n="nav_settings">الإعدادات</a>
+    </nav>
+  </div>
+
+  <!-- ========== EMERGENCY MODAL ========== -->
+  <div class="modal-overlay" id="emergencyModal">
+    <div class="modal">
+      <h2 data-i18n="emergency_title">مشاركة حالة الطوارئ</h2>
+      <p data-i18n="emergency_desc">سيتم مشاركة موقعك الحالي مع جهات الاتصال الطارئة</p>
+      <div class="modal-actions">
+        <button class="btn-outline" onclick="closeModal('emergencyModal')" data-i18n="cancel">إلغاء</button>
+        <button class="btn-primary danger" onclick="shareEmergency()" data-i18n="share">مشاركة</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== EDIT NAME MODAL ========== -->
+  <div class="modal-overlay" id="editNameModal">
+    <div class="modal">
+      <h2 data-i18n="edit_name">تعديل الاسم</h2>
+      <input type="text" id="editNameInput" class="modal-input" placeholder="الاسم الجديد">
+      <div class="modal-actions">
+        <button class="btn-outline" onclick="closeModal('editNameModal')" data-i18n="cancel">إلغاء</button>
+        <button class="btn-primary" onclick="saveName()" data-i18n="save">حفظ</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== TOAST ========== -->
+  <div class="toast" id="toast"></div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
